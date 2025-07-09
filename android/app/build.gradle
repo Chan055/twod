@@ -1,0 +1,48 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+
+    // Must come after the Android and Kotlin plugins
+    id "dev.flutter.flutter-gradle-plugin"
+
+    // Firebase plugin
+    id "com.google.gms.google-services"
+}
+
+android {
+    namespace = "com.example.dtwo"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        // ✅ Java 17+ to avoid Firebase + Java 21 build errors
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
+    }
+
+    kotlinOptions {
+        jvmTarget = "18"
+    }
+
+    defaultConfig {
+        applicationId = "com.example.dtwo"
+        minSdk = 23
+        targetSdk = 33
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+// ✅ Apply Firebase plugin
+apply plugin: 'com.google.gms.google-services'

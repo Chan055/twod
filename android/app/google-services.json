@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "772395040901",
+    "project_id": "two-d-2aa91",
+    "storage_bucket": "two-d-2aa91.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:772395040901:android:7ca04f2890719c98bd29ec",
+        "android_client_info": {
+          "package_name": "com.example.dtwo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCs3EK0zZUXyX18bCpuTeDTbxWyd80OHpw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
