@@ -1,20 +1,41 @@
-/// The response of the `GET /api/activity` endpoint.
-class TwoD {
-  TwoD({
-    this.number,
-    required this.time,
+class TwoDEntry {
+  final String id;
+  final int number;
+  final String timeSlot;
+  final DateTime date;
+
+  TwoDEntry({
+    required this.id,
+    required this.number,
+    required this.timeSlot,
+    required this.date,
   });
 
-  /// Convert a JSON object into an [TwoD] instance.
-  /// This enables type-safe reading of the API response.
-  factory TwoD.fromJson(Map<String, dynamic> json) {
-    return TwoD(
-      number: json['participants'] as int,
-      time: json['key'] as String,
+  factory TwoDEntry.fromJson(Map<String, dynamic> json) {
+    return TwoDEntry(
+      id: json['_id'],
+      number: json['number'],
+      timeSlot: json['timeSlot'],
+      date: DateTime.parse(json['date']),
     );
   }
+}
 
-  final int? number;
-  final String time;
+class TwoDEntryGrouped {
+  final String date;
+  final List<TwoDEntry> entries;
 
+  TwoDEntryGrouped({
+    required this.date,
+    required this.entries,
+  });
+
+  factory TwoDEntryGrouped.fromJson(Map<String, dynamic> json) {
+    return TwoDEntryGrouped(
+      date: json['date'],
+      entries: (json['entries'] as List)
+          .map((entry) => TwoDEntry.fromJson(entry))
+          .toList(),
+    );
+  }
 }

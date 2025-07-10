@@ -13,7 +13,7 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  bool _checkedToken = false; // guard to prevent double navigation
+  bool _checkedToken = false;
 
   @override
   void didChangeDependencies() {
@@ -22,16 +22,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (_checkedToken) return;
     _checkedToken = true;
 
+    Future.delayed(Duration(milliseconds: 200), _checkToken); // wait a bit
+  }
+
+  Future<void> _checkToken() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      user.getIdToken().then((token) {
+      try {
+        final token = await user.getIdToken(true); // true = force refresh
         ref.read(jwtProvider.notifier).setToken(token!);
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
           Navigator.pushReplacementNamed(context, "/home");
-        });
-      });
+        }
+      } catch (e) {
+        // Handle network errors gracefully
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Auto-login failed: ${e.toString()}')),
+          );
+        }
+      }
     }
   }
 
@@ -69,8 +80,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       throw Exception(e.message ?? "Sign in failed");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message ?? "Sign in failed")));
     }
   }
 

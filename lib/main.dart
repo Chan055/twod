@@ -1,4 +1,6 @@
-import 'package:dtwo/pages/home_page.dart';
+import 'package:dtwo/pages/history.dart';
+import 'package:dtwo/pages/home.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +36,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         "/": (context) => LoginPage(),
-        "/home": (context) => AdminPage(),
+        "/home": (context) => Home(),
+        "/history": (context) => HistoryPage(),
       },
     );
   }

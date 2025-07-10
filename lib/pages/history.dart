@@ -1,53 +1,33 @@
+import 'package:dtwo/components/card.dart';
+import 'package:dtwo/providers/two_d_list_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:dtwo/services/two_d_service.dart';
 
-class HistoryPage extends StatefulWidget {
+class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(groupedTwoDEntriesProvider);
+    });
+    final groupedAsync = ref.watch(groupedTwoDEntriesProvider);
 
-class _HistoryPageState extends State<HistoryPage> {
-  late Future<Map<String, List<Map<String, dynamic>>>> _groupedFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _groupedFuture = TwoDService.fetchGroupedByDate();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1D2235),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF6BA147),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text(
           "History",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 26),
         ),
+        backgroundColor: const Color(0xFF5B9547),
       ),
-      body: FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-        future: _groupedFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          }
-
-          final grouped = snapshot.data!;
-          final dates =
-              grouped.keys.toList()
-                ..sort((a, b) => b.compareTo(a)); // newest date first
+      body: groupedAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text("Error: $err")),
+        data: (grouped) {
+          final dates = grouped.keys.toList()
+            ..sort((a, b) => b.compareTo(a)); // Newest first
 
           return ListView.builder(
             itemCount: dates.length,
@@ -55,21 +35,21 @@ class _HistoryPageState extends State<HistoryPage> {
               final date = dates[index];
               final items = grouped[date]!;
 
-              // Sort items by timeSlot order
-              final List<String> timeSlotsOrder = [
+              // Sort by timeSlot order
+              final timeSlotsOrder = [
                 '5:30',
                 '6:30',
                 '7:30',
                 '8:30',
                 '9:30',
-                '10:30',
+                '10:30'
               ];
 
               final sortedItems = [...items]..sort((a, b) {
-                final aIndex = timeSlotsOrder.indexOf(a['timeSlot']);
-                final bIndex = timeSlotsOrder.indexOf(b['timeSlot']);
-                return aIndex.compareTo(bIndex);
-              });
+                  return timeSlotsOrder
+                      .indexOf(a.timeSlot)
+                      .compareTo(timeSlotsOrder.indexOf(b.timeSlot));
+                });
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -78,50 +58,32 @@ class _HistoryPageState extends State<HistoryPage> {
                   Text(
                     DateFormat('dd/MMM/yyyy').format(DateTime.parse(date)),
                     style: const TextStyle(
-                      color: Color(0xFFB8C928),
-                      fontSize: 18,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFFB3DE6B),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  GridView.count(
-                    crossAxisCount: 3,
+                  GridView.builder(
+                    padding: const EdgeInsets.all(16),
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    childAspectRatio: 1.3,
-                    children:
-                        sortedItems.map((entry) {
-                          return Card(
-                            color: const Color(0xFF6BA147),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  entry['timeSlot'],
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                const SizedBox(height: 4),
-                                const Divider(
-                                  thickness: 1,
-                                  color: Colors.black54,
-                                  indent: 16,
-                                  endIndent: 16,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  entry['number'].toString().padLeft(2, '0'),
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                    itemCount: sortedItems.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 30,
+                      childAspectRatio: 1.5,
+                    ),
+                    itemBuilder: (context, index) {
+                      final entry = sortedItems[index];
+                      return CardComponents.GetCard(
+                        time: entry.timeSlot,
+                        number: entry.number.toString(),
+                        // Remove fixed width and height to fill grid cell
+                      );
+                    },
                   ),
                   const SizedBox(height: 30),
                 ],
